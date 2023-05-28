@@ -166,7 +166,7 @@
 
       function searchList(searchValue, searchTerm = "name") {
         items.forEach(({ listItem, data }) => {
-          if (!data[searchTerm].toLowerCase().includes(searchValue)) {
+          if (!data[searchTerm].toLowerCase().includes(searchValue.toLowerCase())) {
             listItem.style.display = 'none';
           } else {
             listItem.style.display = "flex";
