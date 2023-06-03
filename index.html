@@ -108,7 +108,21 @@
         saveToLocalStorage(JSON.stringify(Object.fromEntries(threadsMap)))
     });
 
-    
+    function getCurrentDate() {
+      var now = new Date();
+
+      // Get day, month, year, hours, and minutes
+      var day = String(now.getDate()).padStart(2, '0');
+      var month = String(now.getMonth() + 1).padStart(2, '0');
+      var year = now.getFullYear();
+      var hours = String(now.getHours()).padStart(2, '0');
+      var minutes = String(now.getMinutes()).padStart(2, '0');
+
+      // Format the date string
+      var formattedDate = day + '-' + month + '-' + year + '-' + hours + '-' + minutes;
+
+      return formattedDate;
+    }
 
     /**
      * @function
@@ -120,7 +134,8 @@
       var a = document.createElement("a");
       var file = new Blob([data], {type: contentType});
       a.href = URL.createObjectURL(file);
-      a.download = fileName;
+      let time = new Date()
+      a.download = fileName + getCurrentDate();
       a.click();
     }
 
