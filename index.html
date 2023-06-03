@@ -80,7 +80,7 @@
 
     window.addEventListener("load", () => {
       document.getElementById("saveThreads").addEventListener("click", () => {
-        saveToFile(JSON.stringify(Object.fromEntries(threadsMap)), "threadTrackerData.json")
+        saveToFile(JSON.stringify(Object.fromEntries(threadsMap)), "threadTrackerData")
       });
       document.getElementById("parseThreads").addEventListener("change", async event => {
         let target = event.target;
@@ -135,7 +135,7 @@
       var file = new Blob([data], {type: contentType});
       a.href = URL.createObjectURL(file);
       let time = new Date()
-      a.download = fileName + getCurrentDate();
+      a.download = fileName + getCurrentDate() + ".json";
       a.click();
     }
 
