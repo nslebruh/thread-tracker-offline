@@ -23,8 +23,11 @@
     }
     .li-header {
       width: 20%;
-      display: block;
+      display: flex;
       cursor: pointer;
+      font-size: large;
+      justify-content: center;
+      background-color: gray;
     }
     li {
       display: flex;
@@ -35,7 +38,24 @@
       justify-items: center;
     }
     .row>span {
-      width: 20%
+      width: 20%;
+      justify-content: center;
+      display: flex;
+    }
+    .floss {
+
+    }
+    .name {
+
+    }
+    .button {
+
+    }
+    .amount {
+
+    }
+    .color {
+      
     }
   </style>
 </head>
@@ -43,30 +63,92 @@
   <div class="header">
     <label for="search">Search</label>
     <input type="search" name="search" id="search">
+    <button id="nameSearch">name</button>
+    <button id="flossSearch">floss</button>
+    <button id="saveThreads">Save Threads</button>
+    <label for="parseThreads">Input Threads File</label>
+    <input id='parseThreads' type='file' accept='application/json'>
   </div>
-  <script>
-    let threads2;
+  <ul id="list">
+    <li>
+
+    </li>
+  </ul>
+  <script type="text/javascript">
+    let threadsMap = new Map();
+    const list = document.getElementById("list");
+
     window.addEventListener("load", () => {
-      //window.localStorage.setItem("ThreadTracker", JSON.stringify(threads));
-      if (window.localStorage.getItem("ThreadTracker") === null) {
-        window.localStorage.setItem("ThreadTracker", JSON.stringify(threads));
-      }
-      let local_threads = JSON.parse(window.localStorage.getItem("ThreadTracker"));
-      console.log(local_threads);
-      let values = Object.values(local_threads);
-      threads2 = new Map(values.map(obj => [obj.floss, obj]))
-      const list = createListFromMap(threads2);
-      document.body.appendChild(list)
-    })
+      document.getElementById("saveThreads").addEventListener("click", () => {
+        saveToFile(JSON.stringify(Object.fromEntries(threadsMap)), "threadTrackerData.json")
+      });
+      document.getElementById("parseThreads").addEventListener("change", async event => {
+        let target = event.target;
+        const [file] = target.files;
+        const text = await file.text();
+        let json = JSON.parse(text);
+        let keys = Object.keys(json);
+        for (let i = 0; i < keys.length; i++) {
+          threadsMap.set(json[keys[i]].floss, json[keys[i]])
+        }
+        displayList()
+      });
+      /**
+       * @type {{floss: string, name: string, color: string, amount: number}[]} Thread
+      */
+      let local_threads = JSON.parse(getLocalStorageThreads());
+      /**
+       * @type {Map<string, {floss: string, name: string, color: string, amount: number}>}
+      */
+      Object.values(local_threads).map(obj => threadsMap.set(obj.floss, obj))
+      displayList()
+    });
 
     window.addEventListener("beforeunload", (e) => {
-      window.localStorage.setItem("ThreadTracker", JSON.stringify(Object.fromEntries(threads2)))
-    })
+        saveToLocalStorage(JSON.stringify(Object.fromEntries(threadsMap)))
+    });
 
-    function createListFromMap(data) {
-      console.log(data);
+    
+
+    /**
+     * @function
+     * @param {string} data
+     * @param {string} fileName
+     * @param {string} contentType
+    */
+    function saveToFile(data, fileName, contentType = "text/plain") {
+      var a = document.createElement("a");
+      var file = new Blob([data], {type: contentType});
+      a.href = URL.createObjectURL(file);
+      a.download = fileName;
+      a.click();
+    }
+
+    /**
+     * @function
+     * @param {string} data
+    */
+    function saveToLocalStorage(data) {
+      window.localStorage.setItem("ThreadTracker", data)
+    }
+
+    /**
+     * @function
+     * @return {string}
+    */
+    function getLocalStorageThreads() {
+      if (window.localStorage.getItem("ThreadTracker") === null) {
+        saveToLocalStorage(JSON.stringify(threads)); // makes sure that there is no null value
+      }
+      return window.localStorage.getItem("ThreadTracker")
+    }
+    
+    /**
+     * @function
+    */
+    function displayList() {
       // Create a new unordered list element
-      const list = document.createElement('ul');
+      list.innerHTML = "";
 
       // Create a header row for the list
       const headerRow = document.createElement('li');
@@ -81,22 +163,25 @@
     
       // Create a list item for each object in the data array
       let items = [];
-      data.forEach((item, index) => {
+      threadsMap.forEach((item, index) => {
         const listItem = document.createElement('li');
         listItem.className = "row";
       
         // Floss
         const flossSpan = document.createElement('span');
+        flossSpan.className = "floss"
         flossSpan.textContent = item.floss;
         listItem.appendChild(flossSpan);
       
         // Name
         const nameSpan = document.createElement('span');
         nameSpan.textContent = item.name;
+        nameSpan.className = "name"
         listItem.appendChild(nameSpan);
       
         // Empty column with increment and decrement buttons
         const buttonSpan = document.createElement('span');
+        buttonSpan.className = "button"
         const incrementButton = document.createElement('button');
         incrementButton.textContent = '+';
         incrementButton.addEventListener('click', () => {
@@ -117,11 +202,13 @@
       
         // Amount
         const amountSpan = document.createElement('span');
+        amountSpan.className = "amount"
         amountSpan.textContent = item.amount;
         listItem.appendChild(amountSpan);
       
         // Color
         const colorSpan = document.createElement('span');
+        colorSpan.className = "color"
         //colorSpan.textContent = item.color;
         colorSpan.style.backgroundColor = `#${item.color}`;
         listItem.appendChild(colorSpan);
