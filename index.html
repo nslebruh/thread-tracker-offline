@@ -57,6 +57,42 @@
     .color {
       
     }
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1;
+    }
+
+    .popup-form {
+      opacity: 0;
+      visibility: hidden;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #f1f1f1;
+      border: 1px solid #ccc;
+      transition: opacity 0.3s, visibility 0.3s;
+      z-index: 2;
+      padding: 0;
+      box-sizing: border-box;
+      width: 33.3%;
+      height: 33.3%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .show {
+      opacity: 1;
+      visibility: visible;
+    }
   </style>
 </head>
 <body>
@@ -68,15 +104,50 @@
     <button id="saveThreads">Save Threads</button>
     <label for="parseThreads">Input Threads File</label>
     <input id='parseThreads' type='file' accept='application/json'>
+    <button id="openFormButton">Open Form</button>
   </div>
   <ul id="list">
     <li>
 
     </li>
   </ul>
+  <div id="overlay"></div>
+
+  <div id="popupForm" class="popup-form">
+    <h2>Popup Form</h2>
+    <form>
+      <label for="name">Name:</label>
+      <input type="text" id="name" required>
+      <br>
+      <label for="email">Email:</label>
+      <input type="email" id="email" required>
+      <br>
+      <button type="submit">Submit</button>
+    </form>
+  </div>
   <script type="text/javascript">
+    const openFormButton = document.getElementById('openFormButton');
+    const overlay = document.getElementById('overlay');
+    const popupForm = document.getElementById('popupForm');
+
+    openFormButton.addEventListener('click', function() {
+      overlay.style.display = 'block';
+      popupForm.classList.add('show');
+    });
+
+    window.addEventListener('click', function(event) {
+      if (event.target === overlay) {
+        overlay.style.display = 'none';
+        popupForm.classList.remove('show');
+      }
+    });
+
+    /**
+       * @type {Map<string, {floss: string, name: string, color: string, amount: number}>}
+      */
     let threadsMap = new Map();
     const list = document.getElementById("list");
+    let searchTerm = "floss"
 
     window.addEventListener("load", () => {
       document.getElementById("saveThreads").addEventListener("click", () => {
@@ -97,9 +168,6 @@
        * @type {{floss: string, name: string, color: string, amount: number}[]} Thread
       */
       let local_threads = JSON.parse(getLocalStorageThreads());
-      /**
-       * @type {Map<string, {floss: string, name: string, color: string, amount: number}>}
-      */
       Object.values(local_threads).map(obj => threadsMap.set(obj.floss, obj))
       displayList()
     });
@@ -107,6 +175,15 @@
     window.addEventListener("beforeunload", (e) => {
         saveToLocalStorage(JSON.stringify(Object.fromEntries(threadsMap)))
     });
+
+    document.getElementById("nameSearch").addEventListener("click", e => {
+      searchTerm = "name"
+    });
+
+    document.getElementById("flossSearch").addEventListener("click", e => {
+      searchTerm = "floss"
+    });
+
 
     function getCurrentDate() {
       var now = new Date();
@@ -137,6 +214,7 @@
       let time = new Date()
       a.download = fileName + getCurrentDate() + ".json";
       a.click();
+      URL.revokeObjectURL(file);
     }
 
     /**
@@ -267,7 +345,8 @@
         });
       });
 
-      function searchList(searchValue, searchTerm = "name") {
+      function searchList(searchValue, searchTerm) {
+        console.log(searchTerm)
         items.forEach(({ listItem, data }) => {
           if (!data[searchTerm].toLowerCase().includes(searchValue)) {
             listItem.style.display = 'none';
@@ -278,7 +357,7 @@
       }
       document.getElementById("search").addEventListener("input", (e) => {
         console.log(e.target.value);
-        searchList(e.target.value)
+        searchList(e.target.value, searchTerm)
       })
       
       items.forEach(({listItem}) => {
