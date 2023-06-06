@@ -43,16 +43,16 @@
       display: flex;
     }
     .floss {
-
+      max-width: 10%;
     }
     .name {
-
+      min-width: 40%
     }
     .button {
 
     }
     .amount {
-
+      max-width: 10%;
     }
     .color {
       
@@ -255,7 +255,7 @@
       headerCells.forEach((cellText) => {
         const headerCell = document.createElement('span');
         headerCell.textContent = cellText;
-        headerCell.className = "li-header"
+        headerCell.className = "li-header " + cellText 
         headerRow.appendChild(headerCell);
       });
       list.appendChild(headerRow);
